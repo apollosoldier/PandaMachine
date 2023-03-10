@@ -1,55 +1,62 @@
 import pandas as pd
-from sklearn.impute import SimpleImputer, IterativeImputer, MissingIndicator, KNNImputer
-from sklearn.neighbors import KNeighborsRegressor
-
 import numpy as np
 import os
+
+from sklearn.impute import SimpleImputer, IterativeImputer, MissingIndicator, KNNImputer
+from sklearn.neighbors import KNeighborsRegressor
 
 class Cuttypanda:
     def __init__(self, filename):
         self.filename = filename
-        self.extension = self.filename.split('.')[-1]
+        self.extension = self.filename.split(".")[-1]
         self.data = None
 
     def __getattr__(self, attr):
-        if attr == 'shape':
+        if attr == "shape":
             return self.get_shape()
-        elif attr == 'columns':
+        elif attr == "columns":
             return self.get_columns()
-        elif attr == 'dtypes':
+        elif attr == "dtypes":
             return self.get_dtypes()
-        elif attr == 'describe':
+        elif attr == "describe":
             return self.get_describe()
-        elif attr == 'missing_values':
+        elif attr == "missing_values":
             return self.get_missing_values()
-        elif attr == 'missing_rows':
+        elif attr == "missing_rows":
             return self.get_missing_rows()
-        elif attr == 'unique_values':
+        elif attr == "unique_values":
             return self.get_unique_values()
-        elif attr == 'group_data':
+        elif attr == "group_data":
             return self.group_data
-        elif attr in ['mean_imputer', 'median_imputer', 'most_frequent_imputer', 'constant_imputer']:
-            return lambda: self.impute_missing_values(attr.split('_')[0])
-        elif attr == 'iterative_imputer':
+        elif attr in [
+            "mean_imputer",
+            "median_imputer",
+            "most_frequent_imputer",
+            "constant_imputer",
+        ]:
+            return lambda: self.impute_missing_values(attr.split("_")[0])
+        elif attr == "iterative_imputer":
             return self.iterative_imputer
-        elif attr == 'knn_imputer':
+        elif attr == "knn_imputer":
             return self.knn_imputer
-        elif attr == 'missing_indicator':
+        elif attr == "missing_indicator":
             return self.missing_indicator
-        elif attr == 'efficient_imputer':
+        elif attr == "efficient_imputer":
             return self.efficient_imputer
         else:
             raise AttributeError(f"'Cuttypanda' object has no attribute '{attr}'")
 
     def load_data(self):
-        if self.extension == 'csv':
+        if self.extension == "csv":
             self.data = pd.read_csv(self.filename)
-        elif self.extension == 'json':
+        elif self.extension == "json":
             self.data = pd.read_json(self.filename)
-        elif self.extension == 'xlsx':
+        elif self.extension == "xlsx":
             self.data = pd.read_excel(self.filename)
         else:
-            raise ValueError("Invalid file extension. Only 'csv', 'json', and 'xlsx' are supported.")
+            raise ValueError(
+                "Invalid file extension. Only 'csv', 'json', and 'xlsx' are supported."
+            )
 
     def get_shape(self):
         return self.data.shape
@@ -107,15 +114,17 @@ class Cuttypanda:
         self.data.rename(columns=lambda x: x.strip(), inplace=True)
 
         # Convert any string columns to lowercase
-        string_cols = self.data.select_dtypes(include=['object']).columns
+        string_cols = self.data.select_dtypes(include=["object"]).columns
         self.data[string_cols] = self.data[string_cols].apply(lambda x: x.str.lower())
 
         # Remove any leading/trailing whitespace from string columns
         self.data[string_cols] = self.data[string_cols].apply(lambda x: x.str.strip())
 
         # Convert any date/time columns to datetime format
-        date_cols = self.data.select_dtypes(include=['datetime64']).columns
-        self.data[date_cols] = self.data[date_cols].apply(lambda x: pd.to_datetime(x, errors='coerce'))
+        date_cols = self.data.select_dtypes(include=["datetime64"]).columns
+        self.data[date_cols] = self.data[date_cols].apply(
+            lambda x: pd.to_datetime(x, errors="coerce")
+        )
 
         self.data.drop_duplicates(inplace=True)
 
@@ -126,9 +135,7 @@ class Cuttypanda:
             return self.data.head(n_row)
         raise ValueError("Unsupported value for row")
 
-
     def explore_data(self):
-
         print(self.data.describe())
 
         print(self.data.head())
@@ -141,8 +148,7 @@ class Cuttypanda:
         pd.plotting.scatter_matrix(self.data, figsize=(10, 10))
 
     def plot_data(self, x_col, y_col):
-
-        self.data.plot(kind='scatter', x=x_col, y=y_col, figsize=(8, 8))
+        self.data.plot(kind="scatter", x=x_col, y=y_col, figsize=(8, 8))
 
     def group_data(self, group_cols, agg_func):
         grouped_data = self.data.groupby(group_cols).agg(agg_func)
@@ -208,6 +214,3 @@ class Cuttypanda:
         imputed_data = self.data.copy()
         imputed_data.fillna(imputed_data.mode().iloc[0], inplace=True)
         return imputed_data
-
-
-
